@@ -35,21 +35,23 @@ function Seq (strSequence) {
   Sequence.apply(this, args);
 }
 
-function playSequence(sequenceList, osc) {
+function playSequence(sequenceList, osc, cb) {
   sequenceList.forEach(sequence => {
     setTimeout(() => {
       if (sequence.isSilence) {
-        console.log('PAUSE.');
+        // console.log('PAUSE.');
         osc.context.suspend();
         return;
       }
       osc.context.resume();
       osc.frequency.value = sequence.note;
-      console.log(sequence);
+      // console.log(sequence);
+      if (cb) cb(sequence);
     }, sequence.startTime);
   });
 }
 
+var AudioContext = window.AudioContext || window.webkitAudioContext;
 var ctx = new AudioContext(),
     dest = ctx.destination,
     timeCoef = 0.3,
@@ -87,10 +89,12 @@ var ctx = new AudioContext(),
     ];
 
 var osc1 = ctx.createOscillator();
-osc1.type = 'sawtooth';
+osc1.type = 'triangle';
 osc1.connect(dest);
 
-playSequence(audioSequence, osc1);
+playSequence(audioSequence, osc1, function (sequence) {
+  console.log(sequence);
+});
 
 setTimeout(() => {
   ctx.suspend();
